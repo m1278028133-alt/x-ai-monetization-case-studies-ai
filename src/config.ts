@@ -27,21 +27,57 @@ const schema = z.object({
   DATABASE_URL: z.preprocess(emptyToUndefined, z.string().default("file:./data/bot.db")),
   DATABASE_AUTH_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
   BOT_TIMEZONE: z.preprocess(emptyToUndefined, z.string().default("America/New_York")),
-  POST_WINDOW_START_HOUR: z.coerce.number().int().min(0).max(23).default(8),
-  POST_WINDOW_END_HOUR: z.coerce.number().int().min(1).max(23).default(21),
-  DAILY_POST_MIN: z.coerce.number().int().min(1).max(24).default(2),
-  DAILY_POST_MAX: z.coerce.number().int().min(1).max(24).default(4),
-  MIN_GAP_MINUTES: z.coerce.number().int().min(15).max(1440).default(120),
-  MAX_GAP_MINUTES: z.coerce.number().int().min(30).max(1440).default(360),
-  RANDOM_JITTER_MINUTES: z.coerce.number().int().min(0).max(60).default(5),
-  MAX_RETRY_ATTEMPTS: z.coerce.number().int().min(0).max(10).default(3),
-  CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().int().min(1).max(20).default(4),
+  POST_WINDOW_START_HOUR: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(0).max(23).default(8)
+  ),
+  POST_WINDOW_END_HOUR: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(1).max(23).default(21)
+  ),
+  DAILY_POST_MIN: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(1).max(24).default(2)
+  ),
+  DAILY_POST_MAX: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(1).max(24).default(4)
+  ),
+  MIN_GAP_MINUTES: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(15).max(1440).default(120)
+  ),
+  MAX_GAP_MINUTES: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(30).max(1440).default(360)
+  ),
+  RANDOM_JITTER_MINUTES: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(0).max(60).default(5)
+  ),
+  MAX_RETRY_ATTEMPTS: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(0).max(10).default(3)
+  ),
+  CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(1).max(20).default(4)
+  ),
   DRY_RUN: z.preprocess(emptyToUndefined, z.string().optional().default("false")),
   LANGUAGE_STRATEGY: z.preprocess(emptyToUndefined, z.enum(["en", "zh"]).default("en")),
   ENABLE_SEMANTIC_DEDUP: z.preprocess(emptyToUndefined, z.string().optional().default("true")),
-  KEYWORD_SIMILARITY_THRESHOLD: z.coerce.number().min(0).max(1).default(0.72),
-  SEMANTIC_SIMILARITY_THRESHOLD: z.coerce.number().min(0).max(1).default(0.85),
-  LOOKBACK_POST_LIMIT: z.coerce.number().int().min(10).max(1000).default(150),
+  KEYWORD_SIMILARITY_THRESHOLD: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().min(0).max(1).default(0.72)
+  ),
+  SEMANTIC_SIMILARITY_THRESHOLD: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().min(0).max(1).default(0.85)
+  ),
+  LOOKBACK_POST_LIMIT: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(10).max(1000).default(150)
+  ),
   CONTENT_HARD_BLOCK_TERMS: z
     .string()
     .default("guaranteed income,passive income overnight,DM me for access,100% win"),
