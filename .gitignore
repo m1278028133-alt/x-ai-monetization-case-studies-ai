@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.local
+.turso
+coverage
+*.log
+data/*
+!data/bot.db
+data/bot.db-journal

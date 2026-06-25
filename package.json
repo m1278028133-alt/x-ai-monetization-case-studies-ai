@@ -1,0 +1,32 @@
+{
+  "name": "x-auto-tweet-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Low-cost X auto-posting bot for AI monetization and workflow content.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit -p tsconfig.json",
+    "setup": "tsx src/index.ts setup",
+    "healthcheck": "tsx src/index.ts healthcheck",
+    "dev:once": "tsx src/index.ts run-once",
+    "dev:plan": "tsx src/index.ts plan-day",
+    "dev:dry-run": "tsx src/index.ts dry-run",
+    "db:init": "tsx src/index.ts init-db",
+    "test": "tsx --test tests/**/*.test.ts"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.15",
+    "dotenv": "^16.6.1",
+    "openai": "^6.4.0",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "tsx": "^4.20.3",
+    "typescript": "^5.9.2"
+  }
+}
