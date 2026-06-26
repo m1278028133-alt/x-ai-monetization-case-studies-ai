@@ -14,8 +14,11 @@ function buildIssueBody(payload: NotificationPayload): string {
     ? `\n\nReminder target: ${config.NOTIFICATION_EMAIL}`
     : "";
   const actionLink = payload.url ? `\n\nOpen X composer: ${payload.url}` : "";
+  const mention = config.GITHUB_NOTIFY_HANDLE
+    ? `\n\ncc @${config.GITHUB_NOTIFY_HANDLE.replace(/^@/, "")}`
+    : "";
 
-  return `${payload.content}${actionLink}${reminderTarget}`;
+  return `${payload.content}${actionLink}${reminderTarget}${mention}`;
 }
 
 export async function createGithubIssueNotification(

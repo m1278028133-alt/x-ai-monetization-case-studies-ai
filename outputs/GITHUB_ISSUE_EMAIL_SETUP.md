@@ -41,3 +41,5 @@ mode=test-notification
 ```
 
 That creates one test Issue immediately. If your GitHub notification settings are correct, you should receive the email for that Issue.
+
+The workflow also mentions the repository owner in each Issue body, which gives GitHub another notification reason beyond repository watching.

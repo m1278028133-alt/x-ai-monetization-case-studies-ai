@@ -28,6 +28,7 @@ jobs:
       EMBEDDING_MODEL: ${{ secrets.EMBEDDING_MODEL }}
       GITHUB_TOKEN: ${{ github.token }}
       GITHUB_REPOSITORY: ${{ github.repository }}
+      GITHUB_NOTIFY_HANDLE: ${{ github.repository_owner }}
       NOTIFICATION_EMAIL: ${{ vars.NOTIFICATION_EMAIL }}
       WEBSITE_URL: ${{ vars.WEBSITE_URL }}
       X_PROFILE_URL: ${{ vars.X_PROFILE_URL }}

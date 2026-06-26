@@ -19,6 +19,7 @@ Create these in `Settings -> Secrets and variables -> Actions -> Variables`:
 ```text
 WEBSITE_URL=
 X_PROFILE_URL=
+GITHUB_NOTIFY_HANDLE=m1278028133-alt
 NOTIFICATION_EMAIL=1278028133@qq.com
 BOT_TIMEZONE=America/New_York
 POST_WINDOW_START_HOUR=9

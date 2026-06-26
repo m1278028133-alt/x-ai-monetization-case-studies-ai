@@ -23,6 +23,7 @@ const schema = z.object({
   X_USER_ID: z.preprocess(emptyToUndefined, z.string().optional()),
   GITHUB_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
   GITHUB_REPOSITORY: z.preprocess(emptyToUndefined, z.string().optional()),
+  GITHUB_NOTIFY_HANDLE: z.preprocess(emptyToUndefined, z.string().optional()),
   NOTIFICATION_EMAIL: z.preprocess(emptyToUndefined, z.string().default("1278028133@qq.com")),
   WEBSITE_URL: z.preprocess(emptyToUndefined, z.string().optional()),
   X_PROFILE_URL: z.preprocess(emptyToUndefined, z.string().optional()),
