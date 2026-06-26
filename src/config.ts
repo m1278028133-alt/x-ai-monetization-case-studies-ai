@@ -21,7 +21,9 @@ const schema = z.object({
   X_ACCESS_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
   X_ACCESS_TOKEN_SECRET: z.preprocess(emptyToUndefined, z.string().optional()),
   X_USER_ID: z.preprocess(emptyToUndefined, z.string().optional()),
-  PUSHPLUS_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
+  GITHUB_TOKEN: z.preprocess(emptyToUndefined, z.string().optional()),
+  GITHUB_REPOSITORY: z.preprocess(emptyToUndefined, z.string().optional()),
+  NOTIFICATION_EMAIL: z.preprocess(emptyToUndefined, z.string().default("1278028133@qq.com")),
   WEBSITE_URL: z.preprocess(emptyToUndefined, z.string().optional()),
   X_PROFILE_URL: z.preprocess(emptyToUndefined, z.string().optional()),
   DATABASE_URL: z.preprocess(emptyToUndefined, z.string().default("file:./data/bot.db")),
@@ -201,8 +203,15 @@ export function assertXPostingConfig(): void {
   }
 }
 
-export function assertPushplusConfig(): void {
-  if (!config.PUSHPLUS_TOKEN) {
-    throw new Error("PUSHPLUS_TOKEN is required for WeChat notification delivery.");
+export function assertGithubIssueConfig(): void {
+  const missing = [];
+  if (!config.GITHUB_TOKEN) {
+    missing.push("GITHUB_TOKEN");
+  }
+  if (!config.GITHUB_REPOSITORY) {
+    missing.push("GITHUB_REPOSITORY");
+  }
+  if (missing.length > 0) {
+    throw new Error(`Missing GitHub Issue notification configuration: ${missing.join(", ")}`);
   }
 }

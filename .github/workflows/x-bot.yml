@@ -2,9 +2,22 @@ name: X Bot
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        required: false
+        default: "normal"
+        type: choice
+        options:
+          - normal
+          - test-notification
   schedule:
     - cron: "7 5 * * *"
     - cron: "*/5 * * * *"
+
+permissions:
+  contents: write
+  issues: write
 
 jobs:
   run-bot:
@@ -13,7 +26,9 @@ jobs:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
       EMBEDDING_MODEL: ${{ secrets.EMBEDDING_MODEL }}
-      PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      NOTIFICATION_EMAIL: ${{ vars.NOTIFICATION_EMAIL }}
       WEBSITE_URL: ${{ vars.WEBSITE_URL }}
       X_PROFILE_URL: ${{ vars.X_PROFILE_URL }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -53,12 +68,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Send test notification
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'test-notification'
+        run: npm run notify:test
+
       - name: Plan daily schedule
-        if: github.event.schedule == '7 5 * * *' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '7 5 * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'normal')
         run: npm run dev:plan
 
       - name: Run due posts
-        if: github.event.schedule == '*/5 * * * *' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '*/5 * * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'normal')
         run: npm run dev:once
 
       - name: Commit updated local state

@@ -15,6 +15,7 @@
     "dev:once": "tsx src/index.ts run-once",
     "dev:plan": "tsx src/index.ts plan-day",
     "dev:dry-run": "tsx src/index.ts dry-run",
+    "notify:test": "tsx src/index.ts notify-test",
     "db:init": "tsx src/index.ts init-db",
     "test": "tsx --test tests/**/*.test.ts"
   },

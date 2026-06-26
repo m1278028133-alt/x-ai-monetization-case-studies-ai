@@ -1,4 +1,4 @@
-import { sendWechatNotification } from "../clients/pushplus-client.js";
+import { createGithubIssueNotification } from "../clients/github-issue-client.js";
 import { config } from "../config.js";
 import {
   logRun,
@@ -13,7 +13,7 @@ async function retryNotify(title: string, content: string, url: string | undefin
   let lastError: string | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const result = await sendWechatNotification({ title, content, url });
+    const result = await createGithubIssueNotification({ title, content, url });
     if (result.success) {
       return result;
     }
@@ -44,22 +44,28 @@ export async function publishSlot(slot: StoredScheduleSlot, maxAttempts: number)
       ? tweet.metadata.imageIdea
       : "Use a clean, high-contrast visual that reinforces the main insight.";
   const websiteLine = config.WEBSITE_URL
-    ? `<br/><br/><b>Profile link target:</b> ${config.WEBSITE_URL}`
+    ? `\n\nProfile link target: ${config.WEBSITE_URL}`
     : "";
   const xProfileLine = config.X_PROFILE_URL
-    ? `<br/><b>X profile:</b> ${config.X_PROFILE_URL}`
+    ? `\nX profile: ${config.X_PROFILE_URL}`
     : "";
-  const notificationHtml = [
-    `<b>Ready to post on X</b>`,
-    `<br/><br/><b>Tweet:</b><br/>${tweet.text.replace(/\n/g, "<br/>")}`,
-    hashtags ? `<br/><br/><b>Suggested hashtags:</b><br/>${hashtags}` : "",
-    `<br/><br/><b>Suggested image:</b><br/>${imageIdea}`,
-    `<br/><br/><b>Why this can work for a new account:</b><br/>${tweet.hook || "Strong hook + practical insight + low-friction profile click potential."}`,
+  const notificationMarkdown = [
+    "## Ready to post on X",
+    "### Tweet",
+    "```text",
+    tweet.text,
+    "```",
+    hashtags ? `### Suggested hashtags\n${hashtags}` : "",
+    `### Suggested image\n${imageIdea}`,
+    `### Why this can work for a new account\n${tweet.hook || "Strong hook + practical insight + low-friction profile click potential."}`,
     websiteLine,
     xProfileLine,
-    `<br/><br/><b>Copy workflow:</b><br/>1. Copy the tweet text<br/>2. Optionally add the hashtags if they still fit<br/>3. Add an image based on the suggestion<br/>4. Publish from the X app`,
-    `<br/><br/><a href="${intentUrl}">Open prefilled X composer</a>`
-  ].join("");
+    "### Copy workflow",
+    "1. Copy the tweet text",
+    "2. Optionally add the hashtags if they still fit",
+    "3. Add an image based on the suggestion",
+    "4. Publish from the X app"
+  ].filter(Boolean).join("\n\n");
 
   await updateScheduleSlot(slot.id, {
     tweetId: tweet.id,
@@ -68,17 +74,17 @@ export async function publishSlot(slot: StoredScheduleSlot, maxAttempts: number)
 
   const result = await retryNotify(
     `X post ready: ${slot.topic}`,
-    notificationHtml,
+    notificationMarkdown,
     intentUrl,
     maxAttempts
   );
   if (!result.success) {
     await updateScheduleSlot(slot.id, {
       status: "failed",
-      executionNote: result.error ?? "Unknown WeChat notification failure"
+      executionNote: result.error ?? "Unknown GitHub Issue notification failure"
     });
     await registerFailure(result.error ?? "Unknown notification failure");
-    await logRun("notify", "failed", "Failed to send WeChat notification.", {
+    await logRun("notify", "failed", "Failed to create GitHub Issue notification.", {
       slotId: slot.id,
       tweetId: tweet.id,
       error: result.error
@@ -88,10 +94,10 @@ export async function publishSlot(slot: StoredScheduleSlot, maxAttempts: number)
 
   await updateScheduleSlot(slot.id, {
     status: "notified",
-    executionNote: `WeChat notification sent: ${result.providerPostId}`
+    executionNote: `GitHub Issue notification created: ${result.providerPostId}`
   });
   await registerSuccess();
-  await logRun("notify", "success", "WeChat notification sent.", {
+  await logRun("notify", "success", "GitHub Issue notification created.", {
     slotId: slot.id,
     tweetId: tweet.id,
     providerPostId: result.providerPostId,

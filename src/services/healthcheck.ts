@@ -1,4 +1,4 @@
-import { assertOpenAIConfig, assertPushplusConfig, config, validateRuntimeConfig } from "../config.js";
+import { assertGithubIssueConfig, assertOpenAIConfig, config, validateRuntimeConfig } from "../config.js";
 import { getDb } from "../db/client.js";
 
 export interface HealthcheckReport {
@@ -64,21 +64,21 @@ export async function runHealthcheck(): Promise<HealthcheckReport> {
   }
 
   try {
-    assertPushplusConfig();
+    assertGithubIssueConfig();
     checks.push({
-      name: "wechat-notify-config",
+      name: "github-issue-notify-config",
       ok: true,
-      detail: "PushPlus token is present for WeChat delivery."
+      detail: `GitHub Issue notification config is present for ${config.GITHUB_REPOSITORY}.`
     });
   } catch (error) {
     checks.push({
-      name: "wechat-notify-config",
+      name: "github-issue-notify-config",
       ok: config.DRY_RUN,
       detail: config.DRY_RUN
-        ? "PushPlus token missing, but this is acceptable in dry-run mode because notification delivery is simulated."
+        ? "GitHub Issue notification config is missing, but this is acceptable in dry-run mode because notification delivery is simulated."
         : error instanceof Error
           ? error.message
-          : "Missing PushPlus notification configuration."
+          : "Missing GitHub Issue notification configuration."
     });
   }
 
@@ -87,7 +87,7 @@ export async function runHealthcheck(): Promise<HealthcheckReport> {
     ok: true,
     detail: config.DRY_RUN
       ? "DRY_RUN=true, runner will simulate posting."
-      : "DRY_RUN=false, runner will attempt live posting."
+      : "DRY_RUN=false, runner will create GitHub Issues for due posts."
   });
 
   return {

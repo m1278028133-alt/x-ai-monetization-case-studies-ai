@@ -8,7 +8,9 @@ const hookOpeners = [
   "The real opportunity in AI:",
   "If I were starting from zero:",
   "A better way to think about AI:",
-  "One thing builders keep underestimating:"
+  "One thing builders keep underestimating:",
+  "A small AI move that compounds:",
+  "If you want more AI traction:"
 ];
 
 const toneModifiers: Record<ToneKey, string[]> = {
@@ -59,6 +61,29 @@ const anglePatterns: Record<AngleKey, string[]> = {
   playbook: [
     "{hook} A simple AI playbook: pick one painful workflow, define one clear win, and remove one manual step at a time. {seed} becomes much easier to position with that discipline.",
     "{hook} If you want traction with AI, start with a narrow user, a repeated task, and a visible before/after. {seed} is a good example of how that can work."
+  ]
+};
+
+const closers: Record<TopicKey, string[]> = {
+  ai_monetization_case_studies: [
+    "Would you build this as software or service first?",
+    "What part of this would you automate first?"
+  ],
+  ai_tools_and_workflows: [
+    "Where would this save you the most time?",
+    "What workflow is still too manual in your team?"
+  ],
+  ai_startup_ideas: [
+    "Would you pay for this if it saved you an hour a day?",
+    "Would you ship this as a niche tool?"
+  ],
+  ai_industry_insights: [
+    "What do you think wins next: reliability or novelty?",
+    "Which part of the AI stack do you think gets commoditized fastest?"
+  ],
+  ai_prompts_and_productivity: [
+    "What prompt do you wish you had earlier?",
+    "What task would you hand to AI first?"
   ]
 };
 
@@ -113,9 +138,17 @@ export function generateFreeTweet(params: {
   const anglePattern = anglePatterns[params.angle][randomInt(0, anglePatterns[params.angle].length - 1)];
   const modifierPool = toneModifiers[params.tone];
   const modifier = modifierPool[randomInt(0, modifierPool.length - 1)];
+  const closerPool = closers[params.topic];
+  const closer = closerPool[randomInt(0, closerPool.length - 1)];
 
   let text = fillTemplate(anglePattern, { hook, seed });
   text = `${text} ${modifier}.`.replace(/\s+/g, " ").trim();
+  if (Math.random() < 0.65) {
+    const withCloser = `${text} ${closer}`.replace(/\s+/g, " ").trim();
+    if (withCloser.length <= 260) {
+      text = withCloser;
+    }
+  }
   if (text.length > 260) {
     text = text.slice(0, 257).trimEnd() + "...";
   }

@@ -8,7 +8,6 @@ Create these in `Settings -> Secrets and variables -> Actions -> Secrets`:
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4.1-mini
 EMBEDDING_MODEL=text-embedding-3-small
-PUSHPLUS_TOKEN=
 DATABASE_URL=
 DATABASE_AUTH_TOKEN=
 ```
@@ -20,6 +19,7 @@ Create these in `Settings -> Secrets and variables -> Actions -> Variables`:
 ```text
 WEBSITE_URL=
 X_PROFILE_URL=
+NOTIFICATION_EMAIL=1278028133@qq.com
 BOT_TIMEZONE=America/New_York
 POST_WINDOW_START_HOUR=9
 POST_WINDOW_END_HOUR=19

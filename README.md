@@ -5,8 +5,8 @@ Free cloud workflow for a new X account:
 - auto-generate native English tweets
 - auto-randomize posting windows
 - auto-deduplicate and moderate
-- auto-send WeChat notification through PushPlus
-- send tweet text, suggested hashtags, and image idea to WeChat
+- auto-create GitHub Issues for free email notifications
+- send tweet text, suggested hashtags, and image idea through GitHub Issue email
 - open a prefilled X composer
 - you can copy the full package on mobile and post in X
 
@@ -17,7 +17,7 @@ This version does **not** use the paid X API.
 Instead, it:
 
 1. generates the tweet in the cloud
-2. sends the ready-to-post tweet to your WeChat
+2. creates a GitHub Issue with the ready-to-post tweet
 3. gives you one link to open a prefilled X compose page
 4. you do the final publish tap in X
 
@@ -51,10 +51,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\setup.ps1
 
 Then fill `.env`:
 
-- `PUSHPLUS_TOKEN`
+- `GITHUB_TOKEN` for local live tests only
+- `GITHUB_REPOSITORY` for local live tests only
+- `NOTIFICATION_EMAIL=1278028133@qq.com`
 - `DATABASE_URL`
 - `WEBSITE_URL`
 - `X_PROFILE_URL`
+
+In GitHub Actions you do not need to create a GitHub token secret. The workflow uses the built-in `GITHUB_TOKEN`.
 
 `OPENAI_API_KEY` is optional in this version.  
 If you leave it empty, the project uses the built-in free local content generator.
@@ -65,12 +69,13 @@ If you leave it empty, the project uses the built-in free local content generato
 - `npm run healthcheck`
 - `npm run dev:plan`
 - `npm run dev:once`
+- `npm run notify:test`
 - `npm test`
 - `npm run check`
 
-## How the WeChat reminder works
+## How the GitHub email reminder works
 
-When a post is due, the bot sends a PushPlus message to your WeChat with:
+When a post is due, the bot creates a GitHub Issue with:
 
 - the tweet text
 - suggested hashtags
@@ -79,16 +84,17 @@ When a post is due, the bot sends a PushPlus message to your WeChat with:
 - your website/profile context
 - one click link to open the prefilled X composer
 
+GitHub then sends email according to your GitHub account and repository notification settings.
+
 ## Required setup you still need to do once
 
 You said you want to move as little as possible, so here is the true minimum:
 
-1. create a free PushPlus account
-2. bind it to your WeChat
-3. copy your `PUSHPLUS_TOKEN`
-4. put your website URL into your X profile manually once
-5. deploy this repo to GitHub
-6. add GitHub Secrets and Variables
+1. put your website URL into your X profile manually once
+2. deploy this repo to GitHub
+3. make sure GitHub email notifications are enabled for the repository
+4. add GitHub Secrets and Variables
+5. run the workflow manually with `mode=test-notification`
 
 After that, your computer can stay off.
 
@@ -96,7 +102,6 @@ After that, your computer can stay off.
 
 - `OPENAI_MODEL`
 - `EMBEDDING_MODEL`
-- `PUSHPLUS_TOKEN`
 - `DATABASE_URL`
 - `DATABASE_AUTH_TOKEN`
 
@@ -106,6 +111,7 @@ After that, your computer can stay off.
 
 - `WEBSITE_URL`
 - `X_PROFILE_URL`
+- `NOTIFICATION_EMAIL`
 - `BOT_TIMEZONE`
 - `POST_WINDOW_START_HOUR`
 - `POST_WINDOW_END_HOUR`
@@ -148,4 +154,4 @@ If you do not provide `OPENAI_API_KEY`, the bot will still work:
 - tweet generation uses the built-in local template engine
 - keyword dedup still works
 - semantic embedding dedup is skipped
-- WeChat notification still works
+- GitHub Issue notification still works
