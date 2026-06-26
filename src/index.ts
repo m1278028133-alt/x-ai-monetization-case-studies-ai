@@ -5,6 +5,7 @@ import { initDb } from "./db/init.js";
 import { toDateKey } from "./lib/time.js";
 import { runHealthcheck } from "./services/healthcheck.js";
 import { planDay, runDuePosts } from "./services/runner.js";
+import { publishSampleTweetNotification } from "./services/publisher.js";
 import { sendTestNotification } from "./services/test-notification.js";
 
 async function main(): Promise<void> {
@@ -49,6 +50,13 @@ async function main(): Promise<void> {
       const result = await sendTestNotification();
       console.log(JSON.stringify(result, null, 2));
       process.exitCode = result.success ? 0 : 1;
+      return;
+    }
+    case "sample-tweet": {
+      validateRuntimeConfig();
+      await initDb();
+      await publishSampleTweetNotification();
+      console.log("Sample tweet notification created.");
       return;
     }
     default:

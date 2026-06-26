@@ -16,6 +16,7 @@
     "dev:plan": "tsx src/index.ts plan-day",
     "dev:dry-run": "tsx src/index.ts dry-run",
     "notify:test": "tsx src/index.ts notify-test",
+    "notify:sample-tweet": "tsx src/index.ts sample-tweet",
     "db:init": "tsx src/index.ts init-db",
     "test": "tsx --test tests/**/*.test.ts"
   },

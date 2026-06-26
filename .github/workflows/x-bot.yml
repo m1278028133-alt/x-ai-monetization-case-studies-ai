@@ -11,6 +11,7 @@ on:
         options:
           - normal
           - test-notification
+          - sample-tweet
   schedule:
     - cron: "7 5 * * *"
     - cron: "*/5 * * * *"
@@ -72,6 +73,10 @@ jobs:
       - name: Send test notification
         if: github.event_name == 'workflow_dispatch' && inputs.mode == 'test-notification'
         run: npm run notify:test
+
+      - name: Send sample tweet notification
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'sample-tweet'
+        run: npm run notify:sample-tweet
 
       - name: Plan daily schedule
         if: github.event.schedule == '7 5 * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'normal')
