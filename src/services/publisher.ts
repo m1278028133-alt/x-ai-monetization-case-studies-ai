@@ -1,4 +1,5 @@
 import { createGithubIssueNotification } from "../clients/github-issue-client.js";
+import { sendSmtpNotification } from "../clients/smtp-client.js";
 import { config } from "../config.js";
 import {
   logRun,
@@ -11,18 +12,23 @@ import { createApprovedTweetForTopic } from "./content-pipeline.js";
 import { buildXIntentUrl } from "../lib/x-intent.js";
 import { weightedPick } from "../lib/random.js";
 import type { StoredTweet } from "../db/repository.js";
+import type { NotificationPayload, PostResult } from "../types/index.js";
 
-async function retryNotify(
-  title: string,
-  content: string,
-  url: string | undefined,
+interface NotificationDeliveryResult extends PostResult {
+  githubPostId?: string;
+  smtpPostId?: string;
+  smtpError?: string;
+  smtpSkipped?: boolean;
+}
+
+async function retryPostResult(
+  send: () => Promise<PostResult>,
   maxAttempts: number,
-  options: { forceLive?: boolean } = {}
-) {
+): Promise<PostResult> {
   let lastError: string | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const result = await createGithubIssueNotification({ title, content, url }, options);
+    const result = await send();
     if (result.success) {
       return result;
     }
@@ -38,6 +44,68 @@ async function retryNotify(
   return {
     success: false,
     error: lastError ?? "Unknown notification failure."
+  };
+}
+
+function isSmtpConfigured(): boolean {
+  return Boolean(config.SMTP_USER && config.SMTP_PASS && (config.SMTP_TO || config.NOTIFICATION_EMAIL));
+}
+
+function describeDeliveryResult(result: NotificationDeliveryResult): string {
+  const parts = [`GitHub Issue notification created: ${result.githubPostId ?? result.providerPostId}`];
+  if (result.smtpPostId) {
+    parts.push(`SMTP email sent: ${result.smtpPostId}`);
+  } else if (result.smtpSkipped) {
+    parts.push("SMTP email skipped because SMTP credentials are not configured.");
+  } else if (result.smtpError) {
+    parts.push(`SMTP email failed: ${result.smtpError}`);
+  }
+  return parts.join(" | ");
+}
+
+async function retryNotify(
+  title: string,
+  content: string,
+  url: string | undefined,
+  maxAttempts: number,
+  options: { forceLive?: boolean; requireSmtp?: boolean } = {}
+): Promise<NotificationDeliveryResult> {
+  const payload: NotificationPayload = { title, content, url };
+  const githubResult = await retryPostResult(
+    () => createGithubIssueNotification(payload, options),
+    maxAttempts
+  );
+
+  if (!githubResult.success) {
+    return githubResult;
+  }
+
+  const shouldSendSmtp = options.requireSmtp || isSmtpConfigured() || (config.DRY_RUN && !options.forceLive);
+  if (!shouldSendSmtp) {
+    return {
+      ...githubResult,
+      githubPostId: githubResult.providerPostId,
+      smtpSkipped: true
+    };
+  }
+
+  const smtpResult = await retryPostResult(() => sendSmtpNotification(payload, options), maxAttempts);
+  if (!smtpResult.success && options.requireSmtp) {
+    return {
+      success: false,
+      providerPostId: githubResult.providerPostId,
+      githubPostId: githubResult.providerPostId,
+      smtpError: smtpResult.error,
+      error: smtpResult.error ?? "SMTP notification failed.",
+      retryable: smtpResult.retryable
+    };
+  }
+
+  return {
+    ...githubResult,
+    githubPostId: githubResult.providerPostId,
+    smtpPostId: smtpResult.success ? smtpResult.providerPostId : undefined,
+    smtpError: smtpResult.success ? undefined : smtpResult.error
   };
 }
 
@@ -109,13 +177,16 @@ export async function publishSlot(slot: StoredScheduleSlot, maxAttempts: number)
 
   await updateScheduleSlot(slot.id, {
     status: "notified",
-    executionNote: `GitHub Issue notification created: ${result.providerPostId}`
+    executionNote: describeDeliveryResult(result)
   });
   await registerSuccess();
-  await logRun("notify", "success", "GitHub Issue notification created.", {
+  await logRun("notify", "success", "Notification delivery completed.", {
     slotId: slot.id,
     tweetId: tweet.id,
-    providerPostId: result.providerPostId,
+    providerPostId: result.githubPostId ?? result.providerPostId,
+    smtpPostId: result.smtpPostId,
+    smtpError: result.smtpError,
+    smtpSkipped: result.smtpSkipped,
     intentUrl
   });
 }
@@ -130,7 +201,7 @@ export async function publishSampleTweetNotification(): Promise<void> {
     buildTweetNotificationMarkdown(tweet),
     intentUrl,
     Math.max(1, config.MAX_RETRY_ATTEMPTS),
-    { forceLive: true }
+    { forceLive: true, requireSmtp: true }
   );
 
   if (!result.success) {
@@ -146,10 +217,11 @@ export async function publishSampleTweetNotification(): Promise<void> {
 
   await updateTweetStatus(tweet.id, "approved", result.providerPostId);
   await registerSuccess();
-  await logRun("notify-sample-tweet", "success", "Sample tweet Issue created.", {
+  await logRun("notify-sample-tweet", "success", "Sample tweet notification delivered.", {
     tweetId: tweet.id,
     topic,
-    providerPostId: result.providerPostId,
+    providerPostId: result.githubPostId ?? result.providerPostId,
+    smtpPostId: result.smtpPostId,
     intentUrl
   });
 }

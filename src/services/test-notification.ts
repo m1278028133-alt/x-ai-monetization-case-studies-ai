@@ -1,4 +1,5 @@
 import { createGithubIssueNotification } from "../clients/github-issue-client.js";
+import { sendSmtpNotification } from "../clients/smtp-client.js";
 import { buildXIntentUrl } from "../lib/x-intent.js";
 
 export async function sendTestNotification(): Promise<{
@@ -9,11 +10,11 @@ export async function sendTestNotification(): Promise<{
     "Testing the GitHub Issue notification link for the X Growth Assistant."
   );
 
-  const result = await createGithubIssueNotification({
+  const payload = {
     title: "X 通知测试：请确认是否收到邮件",
     content: [
       "## 通知测试",
-      "如果你看到了这条 Issue，并且邮箱收到了 GitHub 邮件，说明免费通知链路已经正常。",
+      "如果你看到了这条 Issue，并且 QQ 邮箱也收到了直发邮件，说明通知链路已经正常。",
       "下面的示例推文保持英文，正式通知也会这样显示。",
       "### 英文推文示例",
       "```text",
@@ -26,12 +27,25 @@ export async function sendTestNotification(): Promise<{
       "### 打开 X 发布器示例",
       intentUrl
     ].join("\n\n")
-  }, { forceLive: true });
+  };
+  const githubResult = await createGithubIssueNotification(payload, { forceLive: true });
+  if (!githubResult.success) {
+    return {
+      success: false,
+      message: githubResult.error ?? "Test GitHub Issue notification failed."
+    };
+  }
+
+  const smtpResult = await sendSmtpNotification(payload, { forceLive: true });
+  if (!smtpResult.success) {
+    return {
+      success: false,
+      message: smtpResult.error ?? "Test SMTP notification failed."
+    };
+  }
 
   return {
-    success: result.success,
-    message: result.success
-      ? `Test GitHub Issue created: ${result.providerPostId}`
-      : result.error ?? "Test GitHub Issue notification failed."
+    success: true,
+    message: `Test GitHub Issue created and SMTP email sent: ${githubResult.providerPostId}`
   };
 }

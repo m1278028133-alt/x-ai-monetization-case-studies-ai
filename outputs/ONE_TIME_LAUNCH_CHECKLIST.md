@@ -6,11 +6,12 @@
 2. Use a clean bio focused on AI workflows / AI insights
 3. Pin one high-signal post after your first week
 
-## GitHub notification side
+## Notification side
 
 1. Watch the repository on GitHub
 2. Enable email notifications for new Issues
-3. Confirm your GitHub account can email `1278028133@qq.com`
+3. Confirm QQ Mail SMTP service is enabled
+4. Add the QQ Mail SMTP authorization code as `SMTP_PASS`
 
 ## Project side
 
@@ -30,11 +31,11 @@ npm run healthcheck
 3. Add the variables from `GITHUB_CONFIG_TEMPLATE.md`
 4. Enable Actions
 5. Run `workflow_dispatch` once manually with `mode=test-notification`
-6. Confirm the test Issue and GitHub notification email arrive
+6. Confirm the test Issue and QQ SMTP email arrive
 
 ## After launch
 
-1. Watch the first 3 days of GitHub Issue reminders
+1. Watch the first 3 days of GitHub Issue and SMTP reminders
 2. Only post the best-looking messages
 3. Prefer clean screenshots, mini charts, or short visual explainers as images
 4. If a tweet feels too generic, skip it instead of forcing volume

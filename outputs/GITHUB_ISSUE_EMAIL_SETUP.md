@@ -1,8 +1,8 @@
-# GitHub Issue Email Notification Setup
+# GitHub Issue + QQ SMTP Notification Setup
 
-This project no longer needs PushPlus, Resend, SMTP, or any paid email service.
+This project uses GitHub Issues as the durable notification record and QQ Mail SMTP as the direct email path.
 
-When a post is due, GitHub Actions creates a GitHub Issue. GitHub then sends email according to your GitHub account notification settings.
+When a post is due, GitHub Actions creates a GitHub Issue and sends the same reminder to `1278028133@qq.com` through `smtp.qq.com`.
 
 ## 1. Enable repository email notifications
 
@@ -20,7 +20,27 @@ The reminder target noted in generated Issues is:
 
 GitHub controls the actual delivery address through your account settings.
 
-## 2. Required workflow permission
+## 2. Configure QQ SMTP
+
+Add this GitHub Actions secret:
+
+```text
+SMTP_PASS=<QQ Mail SMTP authorization code>
+```
+
+Add these GitHub Actions variables:
+
+```text
+SMTP_HOST=smtp.qq.com
+SMTP_PORT=465
+SMTP_USER=1278028133@qq.com
+SMTP_FROM=1278028133@qq.com
+SMTP_TO=1278028133@qq.com
+SMTP_HELO_NAME=x-growth-assistant.local
+SMTP_TIMEOUT_MS=20000
+```
+
+## 3. Required workflow permission
 
 The workflow includes:
 
@@ -32,7 +52,7 @@ permissions:
 
 No extra GitHub token secret is needed. GitHub Actions provides `GITHUB_TOKEN` automatically.
 
-## 3. Test immediately
+## 4. Test immediately
 
 In GitHub Actions, run the **X Bot** workflow manually and choose:
 
@@ -40,6 +60,6 @@ In GitHub Actions, run the **X Bot** workflow manually and choose:
 mode=test-notification
 ```
 
-That creates one test Issue immediately. If your GitHub notification settings are correct, you should receive the email for that Issue.
+That creates one test Issue immediately and sends one direct SMTP email to QQ Mail.
 
 The workflow also mentions the repository owner in each Issue body, which gives GitHub another notification reason beyond repository watching.

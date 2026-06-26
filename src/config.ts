@@ -25,6 +25,17 @@ const schema = z.object({
   GITHUB_REPOSITORY: z.preprocess(emptyToUndefined, z.string().optional()),
   GITHUB_NOTIFY_HANDLE: z.preprocess(emptyToUndefined, z.string().optional()),
   NOTIFICATION_EMAIL: z.preprocess(emptyToUndefined, z.string().default("1278028133@qq.com")),
+  SMTP_HOST: z.preprocess(emptyToUndefined, z.string().default("smtp.qq.com")),
+  SMTP_PORT: z.preprocess(emptyToUndefined, z.coerce.number().int().min(1).max(65535).default(465)),
+  SMTP_USER: z.preprocess(emptyToUndefined, z.string().optional()),
+  SMTP_PASS: z.preprocess(emptyToUndefined, z.string().optional()),
+  SMTP_FROM: z.preprocess(emptyToUndefined, z.string().optional()),
+  SMTP_TO: z.preprocess(emptyToUndefined, z.string().optional()),
+  SMTP_HELO_NAME: z.preprocess(emptyToUndefined, z.string().default("x-growth-assistant.local")),
+  SMTP_TIMEOUT_MS: z.preprocess(
+    emptyToUndefined,
+    z.coerce.number().int().min(1000).max(120000).default(20000)
+  ),
   WEBSITE_URL: z.preprocess(emptyToUndefined, z.string().optional()),
   X_PROFILE_URL: z.preprocess(emptyToUndefined, z.string().optional()),
   DATABASE_URL: z.preprocess(emptyToUndefined, z.string().default("file:./data/bot.db")),
@@ -214,5 +225,21 @@ export function assertGithubIssueConfig(): void {
   }
   if (missing.length > 0) {
     throw new Error(`Missing GitHub Issue notification configuration: ${missing.join(", ")}`);
+  }
+}
+
+export function assertSmtpConfig(): void {
+  const missing = [];
+  if (!config.SMTP_USER) {
+    missing.push("SMTP_USER");
+  }
+  if (!config.SMTP_PASS) {
+    missing.push("SMTP_PASS");
+  }
+  if (!(config.SMTP_TO || config.NOTIFICATION_EMAIL)) {
+    missing.push("SMTP_TO or NOTIFICATION_EMAIL");
+  }
+  if (missing.length > 0) {
+    throw new Error(`Missing SMTP notification configuration: ${missing.join(", ")}`);
   }
 }

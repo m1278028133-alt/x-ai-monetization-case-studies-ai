@@ -5,6 +5,7 @@ dist
 .turso
 coverage
 *.log
+work/
 data/*
 !data/bot.db
 data/bot.db-journal

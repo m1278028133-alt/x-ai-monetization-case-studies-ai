@@ -31,6 +31,14 @@ jobs:
       GITHUB_REPOSITORY: ${{ github.repository }}
       GITHUB_NOTIFY_HANDLE: ${{ github.repository_owner }}
       NOTIFICATION_EMAIL: ${{ vars.NOTIFICATION_EMAIL }}
+      SMTP_HOST: ${{ vars.SMTP_HOST }}
+      SMTP_PORT: ${{ vars.SMTP_PORT }}
+      SMTP_USER: ${{ vars.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      SMTP_FROM: ${{ vars.SMTP_FROM }}
+      SMTP_TO: ${{ vars.SMTP_TO }}
+      SMTP_HELO_NAME: ${{ vars.SMTP_HELO_NAME }}
+      SMTP_TIMEOUT_MS: ${{ vars.SMTP_TIMEOUT_MS }}
       WEBSITE_URL: ${{ vars.WEBSITE_URL }}
       X_PROFILE_URL: ${{ vars.X_PROFILE_URL }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}

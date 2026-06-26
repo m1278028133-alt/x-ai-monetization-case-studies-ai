@@ -1,4 +1,10 @@
-import { assertGithubIssueConfig, assertOpenAIConfig, config, validateRuntimeConfig } from "../config.js";
+import {
+  assertGithubIssueConfig,
+  assertOpenAIConfig,
+  assertSmtpConfig,
+  config,
+  validateRuntimeConfig
+} from "../config.js";
 import { getDb } from "../db/client.js";
 
 export interface HealthcheckReport {
@@ -79,6 +85,25 @@ export async function runHealthcheck(): Promise<HealthcheckReport> {
         : error instanceof Error
           ? error.message
           : "Missing GitHub Issue notification configuration."
+    });
+  }
+
+  try {
+    assertSmtpConfig();
+    checks.push({
+      name: "smtp-notify-config",
+      ok: true,
+      detail: `SMTP notification config is present for ${config.SMTP_HOST}:${config.SMTP_PORT}.`
+    });
+  } catch (error) {
+    checks.push({
+      name: "smtp-notify-config",
+      ok: config.DRY_RUN,
+      detail: config.DRY_RUN
+        ? "SMTP notification config is missing, but this is acceptable in dry-run mode."
+        : error instanceof Error
+          ? error.message
+          : "Missing SMTP notification configuration."
     });
   }
 

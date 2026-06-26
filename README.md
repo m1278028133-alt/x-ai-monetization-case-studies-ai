@@ -5,8 +5,8 @@ Free cloud workflow for a new X account:
 - auto-generate native English tweets
 - auto-randomize posting windows
 - auto-deduplicate and moderate
-- auto-create GitHub Issues for free email notifications
-- send tweet text, suggested hashtags, and image idea through GitHub Issue email
+- auto-create GitHub Issues as the durable notification record
+- send tweet text, suggested hashtags, and image idea directly through QQ SMTP email
 - open a prefilled X composer
 - you can copy the full package on mobile and post in X
 
@@ -18,8 +18,9 @@ Instead, it:
 
 1. generates the tweet in the cloud
 2. creates a GitHub Issue with the ready-to-post tweet
-3. gives you one link to open a prefilled X compose page
-4. you do the final publish tap in X
+3. sends the same reminder directly to your QQ mailbox by SMTP
+4. gives you one link to open a prefilled X compose page
+5. you do the final publish tap in X
 
 That keeps the workflow free while still letting your computer stay off.
 
@@ -54,6 +55,8 @@ Then fill `.env`:
 - `GITHUB_TOKEN` for local live tests only
 - `GITHUB_REPOSITORY` for local live tests only
 - `NOTIFICATION_EMAIL=1278028133@qq.com`
+- `SMTP_USER=1278028133@qq.com`
+- `SMTP_PASS` as your QQ Mail SMTP authorization code
 - `DATABASE_URL`
 - `WEBSITE_URL`
 - `X_PROFILE_URL`
@@ -73,9 +76,9 @@ If you leave it empty, the project uses the built-in free local content generato
 - `npm test`
 - `npm run check`
 
-## How the GitHub email reminder works
+## How the notification reminder works
 
-When a post is due, the bot creates a GitHub Issue with:
+When a post is due, the bot creates a GitHub Issue and sends a direct QQ SMTP email with:
 
 - the tweet text
 - suggested hashtags
@@ -84,7 +87,7 @@ When a post is due, the bot creates a GitHub Issue with:
 - your website/profile context
 - one click link to open the prefilled X composer
 
-GitHub then sends email according to your GitHub account and repository notification settings.
+GitHub Issues remain the durable record. QQ SMTP is the direct email path to `1278028133@qq.com`.
 
 ## Required setup you still need to do once
 
@@ -104,6 +107,7 @@ After that, your computer can stay off.
 - `EMBEDDING_MODEL`
 - `DATABASE_URL`
 - `DATABASE_AUTH_TOKEN`
+- `SMTP_PASS`
 
 `OPENAI_API_KEY` is optional here too.
 
@@ -112,6 +116,13 @@ After that, your computer can stay off.
 - `WEBSITE_URL`
 - `X_PROFILE_URL`
 - `NOTIFICATION_EMAIL`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_USER`
+- `SMTP_FROM`
+- `SMTP_TO`
+- `SMTP_HELO_NAME`
+- `SMTP_TIMEOUT_MS`
 - `BOT_TIMEZONE`
 - `POST_WINDOW_START_HOUR`
 - `POST_WINDOW_END_HOUR`
@@ -155,3 +166,4 @@ If you do not provide `OPENAI_API_KEY`, the bot will still work:
 - keyword dedup still works
 - semantic embedding dedup is skipped
 - GitHub Issue notification still works
+- QQ SMTP email notification works when `SMTP_PASS` is configured
