@@ -21,6 +21,10 @@ function buildIssueBody(payload: NotificationPayload): string {
   return `${payload.content}${actionLink}${reminderTarget}${mention}`;
 }
 
+function getNotifyHandle(): string | undefined {
+  return config.GITHUB_NOTIFY_HANDLE?.replace(/^@/, "").trim() || undefined;
+}
+
 export async function createGithubIssueNotification(
   payload: NotificationPayload,
   options: { forceLive?: boolean } = {}
@@ -40,6 +44,7 @@ export async function createGithubIssueNotification(
   }
 
   const { owner, repo } = splitRepository(repository);
+  const notifyHandle = getNotifyHandle();
   const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/issues`, {
     method: "POST",
     headers: {
@@ -50,7 +55,8 @@ export async function createGithubIssueNotification(
     },
     body: JSON.stringify({
       title: payload.title,
-      body: buildIssueBody(payload)
+      body: buildIssueBody(payload),
+      assignees: notifyHandle ? [notifyHandle] : undefined
     })
   });
 
