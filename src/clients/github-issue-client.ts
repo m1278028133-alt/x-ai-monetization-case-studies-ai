@@ -11,9 +11,9 @@ function splitRepository(repository: string): { owner: string; repo: string } {
 
 function buildIssueBody(payload: NotificationPayload): string {
   const reminderTarget = config.NOTIFICATION_EMAIL
-    ? `\n\nReminder target: ${config.NOTIFICATION_EMAIL}`
+    ? `\n\n提醒目标邮箱：${config.NOTIFICATION_EMAIL}`
     : "";
-  const actionLink = payload.url ? `\n\nOpen X composer: ${payload.url}` : "";
+  const actionLink = payload.url ? `\n\n打开 X 发布器：${payload.url}` : "";
   const mention = config.GITHUB_NOTIFY_HANDLE
     ? `\n\ncc @${config.GITHUB_NOTIFY_HANDLE.replace(/^@/, "")}`
     : "";

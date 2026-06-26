@@ -44,27 +44,28 @@ export async function publishSlot(slot: StoredScheduleSlot, maxAttempts: number)
       ? tweet.metadata.imageIdea
       : "Use a clean, high-contrast visual that reinforces the main insight.";
   const websiteLine = config.WEBSITE_URL
-    ? `\n\nProfile link target: ${config.WEBSITE_URL}`
+    ? `\n\n主页链接目标：${config.WEBSITE_URL}`
     : "";
   const xProfileLine = config.X_PROFILE_URL
-    ? `\nX profile: ${config.X_PROFILE_URL}`
+    ? `\nX 主页：${config.X_PROFILE_URL}`
     : "";
   const notificationMarkdown = [
-    "## Ready to post on X",
-    "### Tweet",
+    "## 可以发到 X 了",
+    "下面这段推文保持英文，直接复制到 X 发布即可。",
+    "### 英文推文",
     "```text",
     tweet.text,
     "```",
-    hashtags ? `### Suggested hashtags\n${hashtags}` : "",
-    `### Suggested image\n${imageIdea}`,
-    `### Why this can work for a new account\n${tweet.hook || "Strong hook + practical insight + low-friction profile click potential."}`,
+    hashtags ? `### 建议 hashtags\n${hashtags}` : "",
+    `### 配图建议\n${imageIdea}`,
+    `### 为什么适合新号\n${tweet.hook || "Strong hook + practical insight + low-friction profile click potential."}`,
     websiteLine,
     xProfileLine,
-    "### Copy workflow",
-    "1. Copy the tweet text",
-    "2. Optionally add the hashtags if they still fit",
-    "3. Add an image based on the suggestion",
-    "4. Publish from the X app"
+    "### 操作步骤",
+    "1. 复制上面的英文推文",
+    "2. 如果字数还够，可以加上 hashtags",
+    "3. 按配图建议做一张图或截图",
+    "4. 打开 X 发布器并发布"
   ].filter(Boolean).join("\n\n");
 
   await updateScheduleSlot(slot.id, {
@@ -73,7 +74,7 @@ export async function publishSlot(slot: StoredScheduleSlot, maxAttempts: number)
   });
 
   const result = await retryNotify(
-    `X post ready: ${slot.topic}`,
+    `X 推文待发布：${slot.topic}`,
     notificationMarkdown,
     intentUrl,
     maxAttempts

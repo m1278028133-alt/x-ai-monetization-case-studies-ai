@@ -10,19 +10,20 @@ export async function sendTestNotification(): Promise<{
   );
 
   const result = await createGithubIssueNotification({
-    title: "X Growth Assistant notification test",
+    title: "X 通知测试：请确认是否收到邮件",
     content: [
-      "## Test notification",
-      "If this Issue exists and you receive a GitHub email for it, the free notification path is working.",
-      "### Sample tweet",
+      "## 通知测试",
+      "如果你看到了这条 Issue，并且邮箱收到了 GitHub 邮件，说明免费通知链路已经正常。",
+      "下面的示例推文保持英文，正式通知也会这样显示。",
+      "### 英文推文示例",
       "```text",
       "Testing the notification flow before the next scheduled post.",
       "```",
-      "### Sample hashtags",
+      "### hashtags 示例",
       "#AI #Productivity",
-      "### Sample image idea",
+      "### 配图建议示例",
       "A clean card with one short AI takeaway.",
-      "### Open sample X composer",
+      "### 打开 X 发布器示例",
       intentUrl
     ].join("\n\n")
   }, { forceLive: true });
