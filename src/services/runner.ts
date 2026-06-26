@@ -21,9 +21,7 @@ export async function runDuePosts(now = new Date()): Promise<void> {
   const dueSlots = await getPendingDueSlots(now.toISOString());
 
   if (dueSlots.length === 0) {
-    await logRun("run-due", "success", "No due posts found.", {
-      checkedAt: now.toISOString()
-    });
+    console.log(`No due posts found at ${now.toISOString()}.`);
     return;
   }
 

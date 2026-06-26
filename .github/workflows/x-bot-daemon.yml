@@ -1,0 +1,117 @@
+name: X Bot Daemon
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types:
+      - x-bot-daemon-next
+
+permissions:
+  actions: write
+  contents: write
+  issues: write
+
+concurrency:
+  group: x-bot-daemon
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+      EMBEDDING_MODEL: ${{ secrets.EMBEDDING_MODEL }}
+      GITHUB_TOKEN: ${{ github.token }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+      GITHUB_NOTIFY_HANDLE: ${{ github.repository_owner }}
+      NOTIFICATION_EMAIL: ${{ vars.NOTIFICATION_EMAIL }}
+      SMTP_HOST: ${{ vars.SMTP_HOST }}
+      SMTP_PORT: ${{ vars.SMTP_PORT }}
+      SMTP_USER: ${{ vars.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      SMTP_FROM: ${{ vars.SMTP_FROM }}
+      SMTP_TO: ${{ vars.SMTP_TO }}
+      SMTP_HELO_NAME: ${{ vars.SMTP_HELO_NAME }}
+      SMTP_TIMEOUT_MS: ${{ vars.SMTP_TIMEOUT_MS }}
+      WEBSITE_URL: ${{ vars.WEBSITE_URL }}
+      X_PROFILE_URL: ${{ vars.X_PROFILE_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
+      BOT_TIMEZONE: ${{ vars.BOT_TIMEZONE }}
+      POST_WINDOW_START_HOUR: ${{ vars.POST_WINDOW_START_HOUR }}
+      POST_WINDOW_END_HOUR: ${{ vars.POST_WINDOW_END_HOUR }}
+      DAILY_POST_MIN: ${{ vars.DAILY_POST_MIN }}
+      DAILY_POST_MAX: ${{ vars.DAILY_POST_MAX }}
+      MIN_GAP_MINUTES: ${{ vars.MIN_GAP_MINUTES }}
+      MAX_GAP_MINUTES: ${{ vars.MAX_GAP_MINUTES }}
+      RANDOM_JITTER_MINUTES: ${{ vars.RANDOM_JITTER_MINUTES }}
+      MAX_RETRY_ATTEMPTS: ${{ vars.MAX_RETRY_ATTEMPTS }}
+      CIRCUIT_BREAKER_FAILURE_THRESHOLD: ${{ vars.CIRCUIT_BREAKER_FAILURE_THRESHOLD }}
+      LOOKBACK_POST_LIMIT: ${{ vars.LOOKBACK_POST_LIMIT }}
+      LANGUAGE_STRATEGY: ${{ vars.LANGUAGE_STRATEGY }}
+      ENABLE_SEMANTIC_DEDUP: ${{ vars.ENABLE_SEMANTIC_DEDUP }}
+      KEYWORD_SIMILARITY_THRESHOLD: ${{ vars.KEYWORD_SIMILARITY_THRESHOLD }}
+      SEMANTIC_SIMILARITY_THRESHOLD: ${{ vars.SEMANTIC_SIMILARITY_THRESHOLD }}
+      CONTENT_HARD_BLOCK_TERMS: ${{ vars.CONTENT_HARD_BLOCK_TERMS }}
+      TOPIC_WEIGHTS: ${{ vars.TOPIC_WEIGHTS }}
+      TONE_POOL: ${{ vars.TONE_POOL }}
+      ANGLE_POOL: ${{ vars.ANGLE_POOL }}
+      DRY_RUN: ${{ vars.DRY_RUN }}
+      DAEMON_DISPATCH_TOKEN: ${{ secrets.DAEMON_DISPATCH_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Keep checking due posts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..34}; do
+            echo "Daemon check ${i}/34 at $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            npm run dev:once
+
+            git config user.name "x-growth-bot"
+            git config user.email "bot@example.com"
+            git add data/bot.db
+            if ! git diff --cached --quiet; then
+              git commit -m "chore: update bot state"
+              git pull --rebase origin "${GITHUB_REF_NAME}" || true
+              git push origin "HEAD:${GITHUB_REF_NAME}" || true
+            fi
+
+            if [ "${i}" -lt 34 ]; then
+              sleep 600
+              git pull --rebase origin "${GITHUB_REF_NAME}" || true
+            fi
+          done
+
+      - name: Dispatch next daemon segment
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${DAEMON_DISPATCH_TOKEN}" ]; then
+            echo "DAEMON_DISPATCH_TOKEN is not configured; cannot dispatch next daemon segment."
+            exit 1
+          fi
+
+          curl --fail-with-body \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${DAEMON_DISPATCH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/dispatches" \
+            -d '{"event_type":"x-bot-daemon-next"}'
