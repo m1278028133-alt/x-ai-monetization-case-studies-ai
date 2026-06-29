@@ -14,8 +14,7 @@ on:
           - sample-tweet
   schedule:
     - cron: "7 5 * * *"
-    - cron: "2-59/5 * * * *"
-    - cron: "17,32,47 * * * *"
+    - cron: "2,32 * * * *"
 
 permissions:
   contents: write
@@ -92,7 +91,7 @@ jobs:
         run: npm run dev:plan
 
       - name: Run due posts
-        if: contains(fromJSON('["2-59/5 * * * *", "17,32,47 * * * *"]'), github.event.schedule) || (github.event_name == 'workflow_dispatch' && inputs.mode == 'normal')
+        if: github.event.schedule == '2,32 * * * *' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'normal')
         run: npm run dev:once
 
       - name: Commit updated local state
