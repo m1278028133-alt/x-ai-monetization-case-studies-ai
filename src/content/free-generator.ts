@@ -118,6 +118,8 @@ const imageIdeas: Record<TopicKey, string[]> = {
   ]
 };
 
+const textOnlyAngles = new Set<AngleKey>(["contrarian", "mistake", "prediction"]);
+
 function fillTemplate(template: string, values: Record<string, string>): string {
   return template.replace(/\{(\w+)\}/g, (_, key) => values[key] ?? "");
 }
@@ -144,17 +146,14 @@ export function generateFreeTweet(params: {
   let text = fillTemplate(anglePattern, { hook, seed });
   text = `${text} ${modifier}.`.replace(/\s+/g, " ").trim();
   if (Math.random() < 0.65) {
-    const withCloser = `${text} ${closer}`.replace(/\s+/g, " ").trim();
-    if (withCloser.length <= 260) {
-      text = withCloser;
-    }
-  }
-  if (text.length > 260) {
-    text = text.slice(0, 257).trimEnd() + "...";
+    text = `${text} ${closer}`.replace(/\s+/g, " ").trim();
   }
 
   const hashtags = hashtagSets[params.topic][randomInt(0, hashtagSets[params.topic].length - 1)];
-  const imageIdea = imageIdeas[params.topic][randomInt(0, imageIdeas[params.topic].length - 1)];
+  const imageNeeded = !textOnlyAngles.has(params.angle) && Math.random() < 0.75;
+  const imageIdea = imageNeeded
+    ? imageIdeas[params.topic][randomInt(0, imageIdeas[params.topic].length - 1)]
+    : "No image needed. The post works better as a direct text insight.";
 
   return {
     topic: params.topic,
@@ -166,6 +165,7 @@ export function generateFreeTweet(params: {
       fallback: true,
       freeMode: true,
       hashtags,
+      imageNeeded,
       imageIdea,
       notes: `Free local generator using ${params.angle} angle and ${params.tone} tone.`
     }

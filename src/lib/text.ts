@@ -58,9 +58,47 @@ export function jaccardSimilarity(a: string[], b: string[]): number {
   return union === 0 ? 0 : intersection / union;
 }
 
-export function truncateTweet(text: string, limit = 280): string {
-  if (text.length <= limit) {
-    return text;
+export function splitForXThread(text: string, limit = 275): string[] {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return [];
   }
-  return `${text.slice(0, limit - 1).trimEnd()}…`;
+
+  const words = normalized.split(" ");
+  const parts: string[] = [];
+  let current = "";
+
+  for (const word of words) {
+    if (word.length > limit) {
+      if (current) {
+        parts.push(current);
+        current = "";
+      }
+      for (let index = 0; index < word.length; index += limit) {
+        parts.push(word.slice(index, index + limit));
+      }
+      continue;
+    }
+
+    const next = current ? `${current} ${word}` : word;
+    if (next.length <= limit) {
+      current = next;
+      continue;
+    }
+
+    if (current) {
+      parts.push(current);
+    }
+    current = word;
+  }
+
+  if (current) {
+    parts.push(current);
+  }
+
+  return parts;
+}
+
+export function truncateTweet(text: string, limit = 280): string {
+  return splitForXThread(text, limit)[0] ?? "";
 }

@@ -3,7 +3,6 @@ import { config } from "../config.js";
 import { tweetTemplates } from "../content/templates.js";
 import { defaultStyleProfile, topics } from "../content/topics.js";
 import { pickRandom } from "../lib/random.js";
-import { truncateTweet } from "../lib/text.js";
 import type { AngleKey, GeneratedTweet, ToneKey, TopicKey } from "../types/index.js";
 
 function selectTemplate(topic: TopicKey, tone: ToneKey, angle: AngleKey) {
@@ -40,7 +39,7 @@ export async function generateTweet(params: {
   const client = getOpenAI();
 
   const prompt = [
-    "You are writing a single X post in natural, native English for a Western audience.",
+    "You are writing X content in natural, native English for a Western audience.",
     defaultStyleProfile.voice,
     `Audience: ${defaultStyleProfile.audience}`,
     "Growth objective: help a brand-new X account earn attention, profile clicks, saves, replies, and follows through high-signal writing.",
@@ -52,22 +51,26 @@ export async function generateTweet(params: {
     `Angle: ${params.angle}`,
     `Template instruction: ${template.prompt}`,
     "Hard constraints:",
-    "- Output exactly one tweet in English only.",
-    "- Keep it under 260 characters.",
-    "- Optimize for strong first-line hook and clarity on mobile.",
-    "- Prefer one sharp idea over broad coverage.",
+    "- Output one complete X post in English only. It may be a short post or a longer post that can become a thread.",
+    "- Target 180-650 characters. Do not cut off mid-thought. If the idea needs room, write the full idea.",
+    "- Start with a strong first-line hook that creates curiosity, tension, or a useful promise.",
+    "- Prefer one sharp idea with concrete detail over broad coverage.",
     "- Make people want to click the profile for more.",
     "- Do not make it promotional.",
     "- Do not mention your own product, API, pricing, or website.",
     "- You may suggest 1-3 relevant hashtags separately, but keep the main tweet clean.",
     "- No emojis.",
-    "- No bullet list formatting that looks robotic.",
+    "- Bullet list formatting is allowed only when it improves clarity; keep it human and punchy.",
     "- Avoid hype, income promises, and vague marketing language.",
     "- Avoid sounding like a sales page or newsletter teaser.",
     "- Make it feel distinct from recent posts.",
+    "- Include a practical detail, contrast, number, example, or decision rule whenever possible.",
+    "- Decide whether the post benefits from an image. Use imageNeeded=false when text-only is stronger.",
+    "- If imageNeeded=true, write a specific image prompt that can be pasted into an image generator.",
+    "- If imageNeeded=false, keep imageIdea short and explain that no image is needed.",
     `Avoid these phrases: ${defaultStyleProfile.bannedPhrases.join(", ")}`,
     `Recent tweets to avoid sounding similar to:\n${params.recentTweets.slice(0, 8).join("\n") || "None"}`,
-    'Return strict JSON with keys: "text", "hook", "notes", "hashtags", "imageIdea".'
+    'Return strict JSON with keys: "text", "hook", "notes", "hashtags", "imageNeeded", "imageIdea".'
   ].join("\n");
 
   const response = await client.responses.create({
@@ -80,7 +83,7 @@ export async function generateTweet(params: {
         schema: {
           type: "object",
           additionalProperties: false,
-          required: ["text", "hook", "notes", "hashtags", "imageIdea"],
+          required: ["text", "hook", "notes", "hashtags", "imageNeeded", "imageIdea"],
           properties: {
             text: { type: "string" },
             hook: { type: "string" },
@@ -89,6 +92,7 @@ export async function generateTweet(params: {
               type: "array",
               items: { type: "string" }
             },
+            imageNeeded: { type: "boolean" },
             imageIdea: { type: "string" }
           }
         }
@@ -102,9 +106,10 @@ export async function generateTweet(params: {
     hook: string;
     notes: string;
     hashtags: string[];
+    imageNeeded: boolean;
     imageIdea: string;
   };
-  const text = truncateTweet(parsed.text.replace(/\s+/g, " ").trim(), 260);
+  const text = parsed.text.replace(/\s+/g, " ").trim();
 
   return {
     topic: params.topic,
@@ -117,6 +122,7 @@ export async function generateTweet(params: {
       seedIdea,
       notes: parsed.notes.trim(),
       hashtags: (parsed.hashtags ?? []).slice(0, 3).map((tag) => tag.trim()).filter(Boolean),
+      imageNeeded: parsed.imageNeeded,
       imageIdea: parsed.imageIdea.trim()
     }
   };

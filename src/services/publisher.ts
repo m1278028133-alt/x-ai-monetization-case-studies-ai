@@ -7,10 +7,11 @@ import {
   updateScheduleSlot,
   type StoredScheduleSlot
 } from "../db/repository.js";
-import { ensureCircuitClosed, registerFailure, registerSuccess } from "./circuit-breaker.js";
-import { createApprovedTweetForTopic } from "./content-pipeline.js";
 import { buildXIntentUrl } from "../lib/x-intent.js";
 import { weightedPick } from "../lib/random.js";
+import { splitForXThread } from "../lib/text.js";
+import { ensureCircuitClosed, registerFailure, registerSuccess } from "./circuit-breaker.js";
+import { createApprovedTweetForTopic } from "./content-pipeline.js";
 import type { StoredTweet } from "../db/repository.js";
 import type { NotificationPayload, PostResult } from "../types/index.js";
 
@@ -109,45 +110,97 @@ async function retryNotify(
   };
 }
 
+function getStringMetadata(tweet: StoredTweet, key: string): string {
+  const value = tweet.metadata[key];
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function getStringArrayMetadata(tweet: StoredTweet, key: string): string[] {
+  const value = tweet.metadata[key];
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean);
+}
+
+function getBooleanMetadata(tweet: StoredTweet, key: string): boolean | undefined {
+  const value = tweet.metadata[key];
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function buildThreadMarkdown(parts: string[]): string {
+  const mainPost = parts[0] ?? "";
+  const replies = parts.slice(1);
+  const replySection = replies.length > 0
+    ? [
+        "### 发完正文后，在自己评论区继续回复",
+        ...replies.flatMap((reply, index) => [
+          `回复 ${index + 1}`,
+          "```text",
+          reply,
+          "```"
+        ])
+      ].join("\n\n")
+    : "### 发完正文后，在自己评论区继续回复\n\n这条不用继续回复，发主贴即可。";
+
+  return [
+    "### 主贴正文",
+    "```text",
+    mainPost,
+    "```",
+    replySection
+  ].join("\n\n");
+}
+
+function buildImageSection(tweet: StoredTweet): string {
+  const imageNeeded = getBooleanMetadata(tweet, "imageNeeded");
+  const imageIdea = getStringMetadata(tweet, "imageIdea");
+
+  if (imageNeeded === false) {
+    return "### 配图\n\n这条不需要配图，直接发文字更干净。";
+  }
+
+  if (!imageIdea) {
+    return "### 配图\n\n这条不需要配图，直接发文字即可。";
+  }
+
+  return [
+    "### 配图",
+    "当前机器人还不能自动把生成图片附件发进邮件，所以先给你配图提示词。需要配图时，把下面这段交给 GPT 图片工具生成：",
+    "```text",
+    imageIdea,
+    "```"
+  ].join("\n\n");
+}
+
 function buildTweetNotificationMarkdown(tweet: StoredTweet): string {
-  const hashtags = Array.isArray(tweet.metadata.hashtags)
-    ? (tweet.metadata.hashtags as string[]).join(" ")
-    : "";
-  const imageIdea =
-    typeof tweet.metadata.imageIdea === "string"
-      ? tweet.metadata.imageIdea
-      : "Use a clean, high-contrast visual that reinforces the main insight.";
-  const websiteLine = config.WEBSITE_URL
-    ? `\n\n主页链接目标：${config.WEBSITE_URL}`
-    : "";
-  const xProfileLine = config.X_PROFILE_URL
-    ? `\nX 主页：${config.X_PROFILE_URL}`
-    : "";
+  const parts = splitForXThread(tweet.text, 275);
+  const hashtags = getStringArrayMetadata(tweet, "hashtags");
+  const websiteLine = config.WEBSITE_URL ? `主页链接目标：${config.WEBSITE_URL}` : "";
+  const xProfileLine = config.X_PROFILE_URL ? `X 主页：${config.X_PROFILE_URL}` : "";
+  const notes = getStringMetadata(tweet, "notes");
 
   return [
     "## 可以发到 X 了",
-    "下面这段推文保持英文，直接复制到 X 发布即可。",
-    "### 英文推文",
-    "```text",
-    tweet.text,
-    "```",
-    hashtags ? `### 建议 hashtags\n${hashtags}` : "",
-    `### 配图建议\n${imageIdea}`,
-    `### 为什么适合新号\n${tweet.hook || "Strong hook + practical insight + low-friction profile click potential."}`,
-    websiteLine,
-    xProfileLine,
-    "### 操作步骤",
-    "1. 复制上面的英文推文",
-    "2. 如果字数还够，可以加上 hashtags",
-    "3. 按配图建议做一张图或截图",
-    "4. 打开 X 发布器并发布"
+    "下面是完整推文。主贴先发，如果有回复段，就发完正文后在自己评论区继续回复自己。",
+    buildThreadMarkdown(parts),
+    hashtags.length > 0 ? `### 建议 hashtags\n\n${hashtags.join(" ")}` : "",
+    buildImageSection(tweet),
+    `### 为什么适合新号\n\n${tweet.hook || notes || "Strong hook, practical insight, and clear profile-click potential."}`,
+    websiteLine || xProfileLine ? ["### 账号信息", websiteLine, xProfileLine].filter(Boolean).join("\n\n") : "",
+    "### 操作步骤\n\n1. 点下面的 X 发布器打开主贴\n2. 发布主贴正文\n3. 如果上面有回复段，回到自己这条推文下面逐条回复\n4. 如果有配图提示词，先生成配图再发；如果写着不需要配图，就直接发文字"
   ].filter(Boolean).join("\n\n");
+}
+
+function buildTweetIntentUrl(tweet: StoredTweet): string {
+  const mainPost = splitForXThread(tweet.text, 275)[0] ?? tweet.text;
+  return buildXIntentUrl(mainPost);
 }
 
 export async function publishSlot(slot: StoredScheduleSlot, maxAttempts: number): Promise<void> {
   await ensureCircuitClosed();
   const tweet = await createApprovedTweetForTopic(slot.topic);
-  const intentUrl = buildXIntentUrl(tweet.text);
+  const intentUrl = buildTweetIntentUrl(tweet);
   const notificationMarkdown = buildTweetNotificationMarkdown(tweet);
 
   await updateScheduleSlot(slot.id, {
@@ -195,9 +248,9 @@ export async function publishSampleTweetNotification(): Promise<void> {
   await ensureCircuitClosed();
   const topic = weightedPick(config.topicWeights);
   const tweet = await createApprovedTweetForTopic(topic);
-  const intentUrl = buildXIntentUrl(tweet.text);
+  const intentUrl = buildTweetIntentUrl(tweet);
   const result = await retryNotify(
-    `X 推文待发布：邮箱测试`,
+    "X 推文待发布：邮箱测试",
     buildTweetNotificationMarkdown(tweet),
     intentUrl,
     Math.max(1, config.MAX_RETRY_ATTEMPTS),
