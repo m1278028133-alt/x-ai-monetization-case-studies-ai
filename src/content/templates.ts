@@ -14,28 +14,28 @@ export const tweetTemplates: TweetTemplate[] = [
     topic: "ai_monetization_case_studies",
     angle: "case_study",
     tone: "analyst",
-    prompt: "Write a short case study tweet showing how a niche AI business makes money, including offer, buyer, and why it works."
+    prompt: "Write a case-study style tweet showing how a niche AI business can make money, including offer, buyer, pricing logic, and why it works. Do not invent named companies or fake revenue."
   },
   {
     id: "t02",
     topic: "ai_monetization_case_studies",
     angle: "breakdown",
     tone: "operator",
-    prompt: "Break down an AI business model into acquisition, delivery, retention, and margin in one compact tweet."
+    prompt: "Break down an AI monetization model into acquisition, delivery, retention, and margin. Make it useful for a follower who wants to copy the pattern ethically."
   },
   {
     id: "t03",
     topic: "ai_monetization_case_studies",
     angle: "mistake",
     tone: "founder",
-    prompt: "Explain a common monetization mistake AI founders make and what a stronger pricing move looks like."
+    prompt: "Explain a common AI monetization mistake and what a stronger offer, pricing, or packaging move looks like."
   },
   {
     id: "t04",
     topic: "ai_monetization_case_studies",
     angle: "framework",
     tone: "educator",
-    prompt: "Give a simple framework for judging whether an AI product idea can monetize beyond a demo."
+    prompt: "Teach a simple framework for judging whether an AI idea can become a paid offer beyond a demo."
   },
   {
     id: "t05",
@@ -84,7 +84,7 @@ export const tweetTemplates: TweetTemplate[] = [
     topic: "ai_startup_ideas",
     angle: "breakdown",
     tone: "founder",
-    prompt: "Pitch one realistic AI startup idea with buyer, pain point, wedge, and pricing hint."
+    prompt: "Pitch one realistic AI startup idea with buyer, pain point, wedge, pricing hint, and first sales channel."
   },
   {
     id: "t12",
@@ -98,14 +98,14 @@ export const tweetTemplates: TweetTemplate[] = [
     topic: "ai_startup_ideas",
     angle: "case_study",
     tone: "operator",
-    prompt: "Imagine a plausible small AI startup and explain why it could reach revenue with a tiny team."
+    prompt: "Use a clearly hypothetical mini-case to explain how a small AI startup could reach early revenue with a tiny team."
   },
   {
     id: "t14",
     topic: "ai_startup_ideas",
     angle: "playbook",
     tone: "builder",
-    prompt: "Share a mini playbook for validating an AI startup idea before building too much."
+    prompt: "Share a mini playbook for validating and pre-selling an AI startup idea before building too much."
   },
   {
     id: "t15",
@@ -189,14 +189,14 @@ export const tweetTemplates: TweetTemplate[] = [
     topic: "any",
     angle: "breakdown",
     tone: "operator",
-    prompt: "Write a compact, high-signal tweet that turns a practical AI lesson into a crisp business insight."
+    prompt: "Write a compact, high-signal tweet that turns a practical AI monetization lesson into a crisp business insight."
   },
   {
     id: "t27",
     topic: "any",
     angle: "case_study",
     tone: "builder",
-    prompt: "Use a believable mini-case to illustrate one AI execution lesson."
+    prompt: "Use a believable, clearly anonymized mini-case to illustrate one AI monetization or startup execution lesson."
   },
   {
     id: "t28",

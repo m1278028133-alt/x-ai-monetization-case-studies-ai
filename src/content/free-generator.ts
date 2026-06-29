@@ -24,11 +24,13 @@ const toneModifiers: Record<ToneKey, string[]> = {
 const anglePatterns: Record<AngleKey, string[]> = {
   framework: [
     "{hook} AI wins when it does 3 things well: removes a painful manual step, fits an existing budget, and gets better with workflow context. {seed} is interesting because it can do all three.",
-    "{hook} A useful AI filter: pain, frequency, and proof. If a workflow hurts often and AI can show visible improvement, people will try it. That is why {seed} keeps showing up."
+    "{hook} A useful AI monetization filter: pain, frequency, and proof. If a workflow hurts often and AI can show visible improvement, people will try it. That is why {seed} keeps showing up.",
+    "{hook} The simplest AI money test is buyer, pain, delivery, proof. If you cannot name all 4, you probably have a demo, not an offer. {seed} gets interesting when those 4 pieces line up."
   ],
   case_study: [
     "{hook} {seed} works as a case study because the buyer already knows the pain, the ROI is easy to explain, and the workflow is repetitive enough for AI to matter.",
-    "{hook} The reason {seed} can become a real business is simple: it is not selling 'AI'. It is selling faster output, fewer mistakes, and less busywork."
+    "{hook} The reason {seed} can become a real business is simple: it is not selling 'AI'. It is selling faster output, fewer mistakes, and less busywork.",
+    "{hook} A small AI success case usually looks like this: start as a service, document the repeated steps, automate the painful middle, then turn the repeatable part into software. {seed} fits that path."
   ],
   contrarian: [
     "{hook} The best AI products usually do not look impressive in a demo. They look boring, specific, and deeply useful. {seed} is a better bet than another generic copilot.",
@@ -36,7 +38,8 @@ const anglePatterns: Record<AngleKey, string[]> = {
   ],
   step_by_step: [
     "{hook} A simple AI workflow: collect the messy input, classify the real job, generate a first pass, then make a human review the final edge cases. {seed} gets stronger with that setup.",
-    "{hook} A practical AI loop is: intake, structure, generate, verify. Most teams skip the verify step. {seed} only works when that last step stays tight."
+    "{hook} A practical AI loop is: intake, structure, generate, verify. Most teams skip the verify step. {seed} only works when that last step stays tight.",
+    "{hook} If you want to monetize an AI workflow, do it in this order: sell the outcome manually, track the repeated steps, automate one bottleneck, then package the process. {seed} is a good place to apply that."
   ],
   breakdown: [
     "{hook} Break the opportunity into 4 parts: acquisition, activation, retention, and trust. {seed} gets interesting when trust improves faster than cost rises.",
@@ -60,14 +63,16 @@ const anglePatterns: Record<AngleKey, string[]> = {
   ],
   playbook: [
     "{hook} A simple AI playbook: pick one painful workflow, define one clear win, and remove one manual step at a time. {seed} becomes much easier to position with that discipline.",
-    "{hook} If you want traction with AI, start with a narrow user, a repeated task, and a visible before/after. {seed} is a good example of how that can work."
+    "{hook} If you want traction with AI, start with a narrow user, a repeated task, and a visible before/after. {seed} is a good example of how that can work.",
+    "{hook} A practical AI monetization playbook: find a boring workflow people already pay for, use AI to cut delivery time, charge for the outcome, then productize only after the pattern repeats."
   ]
 };
 
 const closers: Record<TopicKey, string[]> = {
   ai_monetization_case_studies: [
     "Would you build this as software or service first?",
-    "What part of this would you automate first?"
+    "What part of this would you automate first?",
+    "What would you charge for the first version?"
   ],
   ai_tools_and_workflows: [
     "Where would this save you the most time?",
@@ -75,7 +80,8 @@ const closers: Record<TopicKey, string[]> = {
   ],
   ai_startup_ideas: [
     "Would you pay for this if it saved you an hour a day?",
-    "Would you ship this as a niche tool?"
+    "Would you ship this as a niche tool?",
+    "Who would you sell the first 10 customers to?"
   ],
   ai_industry_insights: [
     "What do you think wins next: reliability or novelty?",
@@ -97,16 +103,16 @@ const hashtagSets: Record<TopicKey, string[][]> = {
 
 const imageIdeas: Record<TopicKey, string[]> = {
   ai_monetization_case_studies: [
-    "A clean one-slide case breakdown: buyer, pain, offer, pricing.",
-    "A small table comparing problem, AI solution, and revenue logic."
+    "A clean one-slide case breakdown: buyer, pain, offer, pricing, and delivery loop.",
+    "A small table comparing problem, AI solution, revenue logic, and first sales channel."
   ],
   ai_tools_and_workflows: [
     "A simple workflow diagram with 3 to 4 steps on a clean background.",
     "A tidy screenshot-style card showing before vs after workflow time."
   ],
   ai_startup_ideas: [
-    "A founder-style note card with problem, buyer, and wedge.",
-    "A mini market map showing where the startup idea fits."
+    "A founder-style note card with problem, buyer, wedge, pricing, and first outreach channel.",
+    "A mini market map showing where the startup idea fits and who pays first."
   ],
   ai_industry_insights: [
     "A bold text card with one surprising industry takeaway.",

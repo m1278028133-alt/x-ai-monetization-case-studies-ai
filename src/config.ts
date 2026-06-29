@@ -100,7 +100,7 @@ const schema = z.object({
     z
       .string()
     .default(
-      "ai_monetization_case_studies:30,ai_tools_and_workflows:25,ai_startup_ideas:20,ai_industry_insights:15,ai_prompts_and_productivity:10"
+      "ai_monetization_case_studies:45,ai_startup_ideas:25,ai_tools_and_workflows:15,ai_prompts_and_productivity:10,ai_industry_insights:5"
     )
   ),
   TONE_POOL: z.preprocess(
